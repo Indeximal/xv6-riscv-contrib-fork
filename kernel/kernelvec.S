@@ -111,10 +111,10 @@ timervec:
         add a3, a3, a2
         sd a3, 0(a1)
 
-        # arrange for a supervisor software interrupt
+        # arrange for a supervisor timer interrupt
         # after this handler returns.
-        li a1, 2
-        csrw sip, a1
+        li a1, 32 # STIP flag at bit 5
+        csrw mip, a1 # writable only in mip, but visible in sip
 
         ld a3, 16(a0)
         ld a2, 8(a0)

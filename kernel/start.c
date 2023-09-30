@@ -33,9 +33,10 @@ start()
   // disable paging for now.
   w_satp(0);
 
-  // delegate all interrupts and exceptions to supervisor mode.
+  // delegate all exceptions to supervisor mode.
   w_medeleg(0xffff);
-  w_mideleg(0xffff);
+  // delegate supervisor interrupts to supervisor mode.
+  w_mideleg(SIE_SEIE | SIE_STIE | SIE_SSIE);
   w_sie(r_sie() | SIE_SEIE | SIE_STIE | SIE_SSIE);
 
   // configure Physical Memory Protection to give supervisor mode
@@ -54,11 +55,11 @@ start()
   asm volatile("mret");
 }
 
-// arrange to receive timer interrupts.
-// they will arrive in machine mode at
-// at timervec in kernelvec.S,
-// which turns them into software interrupts for
-// devintr() in trap.c.
+// arrange to receive machine mode timer interrupts.
+// they cannot be delegated and so will arrive
+// in machine mode at timervec in kernelvec.S,
+// which turns them into supervisor timer interrupts
+// for devintr() in trap.c.
 void
 timerinit()
 {

@@ -201,17 +201,20 @@ devintr()
       plic_complete(irq);
 
     return 1;
-  } else if(scause == 0x8000000000000001L){
-    // software interrupt from a machine-mode timer interrupt,
+  } else if(scause == 0x8000000000000005L){
+    // supervisor timer interrupt from a machine-mode timer interrupt,
     // forwarded by timervec in kernelvec.S.
 
     if(cpuid() == 0){
       clockintr();
     }
     
-    // acknowledge the software interrupt by clearing
-    // the SSIP bit in sip.
-    w_sip(r_sip() & ~2);
+    // acknowledge the timer interrupt by clearing
+    // the STIP bit in sip. (same bit as in SIE)
+    // !!! THIS DOES NOT WORK, the STIP bit is not writable in 
+    // sip, only in mip. Therefore there is no way to reset the
+    // pending interrupt and it keeps triggering.
+    w_sip(r_sip() & ~SIE_STIE);
 
     return 2;
   } else {
